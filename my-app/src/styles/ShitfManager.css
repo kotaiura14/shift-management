@@ -1,0 +1,12 @@
+.ShiftManager {
+  padding: 20px;
+}
+
+.ShiftForm {
+  margin-bottom: 20px;
+}
+
+.ShiftList {
+  list-style-type: none;
+  padding: 0;
+}

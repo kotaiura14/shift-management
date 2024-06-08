@@ -1,0 +1,46 @@
+.calendar-controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.calendar-controls label {
+  margin: 0 10px;
+}
+
+.calendar {
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.calendar-day-header {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 5px;
+  text-align: center;
+  flex: 1;
+  font-weight: bold;
+}
+
+.calendar-week {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.calendar-day {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 5px;
+  text-align: center;
+  flex: 1;
+}
+
+.calendar-day input {
+  margin-top: 5px;
+}
