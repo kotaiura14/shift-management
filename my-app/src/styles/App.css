@@ -1,4 +1,36 @@
-.App {
-  font-family: sans-serif;
+.registration-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.registration-form {
   text-align: center;
+  font-size: 2em; /* フォントサイズを大きくする */
+}
+
+.form-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  margin-right: 10px;
+  font-size: 1em; /* ラベルのフォントサイズ */
+}
+
+.form-group input, .form-group select {
+  font-size: 1em; /* 入力欄のフォントサイズ */
+  padding: 10px;
+  width: 200px;
+  margin-right: 20px;
+}
+
+.submit-button {
+  font-size: 1.5em;
+  padding: 10px 20px;
+  margin-top: 20px;
 }

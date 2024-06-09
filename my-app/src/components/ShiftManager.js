@@ -17,7 +17,7 @@ const ShiftManager = () => {
 
   return (
     <div className="ShiftManager">
-      <h1>Shift Manager</h1>
+      <h1>シフト希望</h1>
       <Calendar onSubmit={handleSubmit} />
     </div>
   );
