@@ -1,46 +1,231 @@
+/* テーマに基づく背景色とフォント設定 */
+body.theme1, body.theme2 {
+  background-color: white;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+/* テーマ選択とモード切替のスタイル */
+.theme-selector, .mode-toggle {
+  position: fixed;
+  top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.theme-selector {
+  left: 10px;
+}
+
+.mode-toggle {
+  right: 10px;
+}
+
+/* カレンダーコントロールのスタイル */
 .calendar-controls {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+  font-size: 1.5em;
 }
 
 .calendar-controls label {
   margin: 0 10px;
+  font-weight: bold;
+  color: #333;
 }
 
+.calendar-controls input {
+  margin-left: 5px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+.theme-selector label, .theme-selector select {
+  font-size: 1.5em;
+}
+
+/* カレンダーのスタイル */
 .calendar {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: calc(100vh - 150px);
+  box-sizing: border-box;
 }
 
 .calendar-header {
   display: flex;
   justify-content: space-between;
+  border-radius: 4px;
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .calendar-day-header {
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin: 5px;
-  text-align: center;
   flex: 1;
+  text-align: center;
   font-weight: bold;
+  padding: 5px;
 }
 
 .calendar-week {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.calendar-day {
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin: 5px;
-  text-align: center;
+  width: 100%;
   flex: 1;
 }
 
-.calendar-day input {
+.calendar-day {
+  flex: 1;
+  border: 1px solid #ccc;
+  padding: 5px; /* paddingを小さくしてテキストが収まるようにする */
+  margin: 5px;
+  text-align: center;
+  border-radius: 4px;
+  box-sizing: border-box;
+  height: calc((100vh - 150px) / 6 - 20px);
+  font-size: 1.2em;
+}
+
+.calendar-select, .calendar-button, .calendar-day .unavailable, .calendar-day .selected-time {
   margin-top: 5px;
+  width: 100%;
+  padding: 5px; /* paddingを小さくしてテキストが収まるようにする */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em; /* フォントサイズを少し小さく */
+}
+
+.calendar-day .unavailable {
+  cursor: pointer;
+  text-align: center;
+  font-size: 1.5em;
+}
+
+.calendar-day .selected-time {
+  cursor: pointer;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.calendar-day button {
+  margin-top: 5px;
+  padding: 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.calendar-day button:hover {
+  background-color: #555;
+}
+
+.calendar-day input:focus, .calendar-day select:focus {
+  outline: none;
+}
+
+.calendar-controls input:focus {
+  outline: none;
+}
+
+button[type="submit"] {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+  background-color: #32cd32;
+  color: white;
+}
+
+button[type="submit"]:hover {
+  background-color: #2e8b57;
+}
+
+.notice {
+  text-align: center;
+  font-size: 1.2em;
+  color: #ff0000;
+  margin-top: 20px;
+}
+
+.error-message {
+  text-align: center;
+  color: red;
+  margin-bottom: 10px;
+}
+
+/* Theme 1 */
+body.theme1 .calendar-header {
+  background-color: #ffa500;
+  color: white;
+}
+
+body.theme1 .calendar-day-header {
+  color: white;
+}
+
+body.theme1 .calendar-day {
+  background-color: white;
+  color: black;
+}
+
+body.theme1 .calendar-day .unavailable, body.theme1 .calendar-day .selected-time {
+  background-color: black;
+  color: white;
+}
+
+body.theme1 .calendar-day button {
+  background-color: black;
+  color: white;
+}
+
+body.theme1 button[type="submit"] {
+  background-color: black;
+  color: white;
+}
+
+/* Theme 2 */
+body.theme2 .calendar-header {
+  background-color: #ffa500;
+  color: white;
+}
+
+body.theme2 .calendar-day-header {
+  color: black;
+}
+
+body.theme2 .calendar-day {
+  background-color: #f5f5f5;
+  color: black;
+}
+
+body.theme2 .calendar-day .unavailable {
+  background-color: #ffa500;
+  color: white;
+}
+
+body.theme2 .calendar-day .selected-time {
+  background-color: #32cd32;
+  color: white;
+}
+
+body.theme2 .calendar-day button {
+  background-color: #ffa500;
+  color: white;
+}
+
+body.theme2 button[type="submit"] {
+  background-color: #32cd32;
+  color: white;
 }
