@@ -1,60 +1,51 @@
-import React, { useState, useEffect } from 'react'; // ReactとuseState、useEffectフックをインポート
-import '../styles/Calendar.css'; // CSSファイルをインポート
+import React, { useState, useEffect } from 'react';
+import '../styles/Calendar.css';
 
-const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土']; // 曜日のリストを定義
-const workingHours = Array.from({ length: 19 }, (_, i) => { // 勤務時間のリストを定義
+const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
+const workingHours = Array.from({ length: 19 }, (_, i) => {
   const hour = String(Math.floor(i / 2) + 9).padStart(2, '0');
   const minutes = i % 2 === 0 ? '00' : '30';
   return `${hour}:${minutes}`;
 });
 
-// PartTimeCalendarコンポーネント
-const PartTimeCalendar = ({ name }) => {
-  // 年、月、日付、出勤状況、テーマ、エラーメッセージを管理する状態を定義
-  const [year, setYear] = useState(new Date().getFullYear()); // 年の状態を管理
-  const [month, setMonth] = useState(new Date().getMonth() + 1); // 月の状態を管理
-  const [dates, setDates] = useState([]); // 日付のリストを管理
-  const [availability, setAvailability] = useState({}); // 出勤状況を管理
-  const [theme, setTheme] = useState('theme1'); // テーマの状態を管理
-  const [error, setError] = useState(''); // エラーメッセージを管理
+const PartTimeCalendar = ({ name, setAvailability }) => {
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState(new Date().getMonth() + 1);
+  const [dates, setDates] = useState([]);
+  const [availability, setInternalAvailability] = useState({});
+  const [theme, setTheme] = useState('theme1');
+  const [error, setError] = useState('');
 
-  // 年と月が変更されたときにカレンダーを生成
   useEffect(() => {
     generateCalendar(year, month);
   }, [year, month]);
 
-  // テーマが変更されたときに適用
   useEffect(() => {
     document.body.className = theme;
   }, [theme]);
 
-  // カレンダーを生成する関数
   const generateCalendar = (year, month) => {
-    const start = new Date(year, month - 1, 21); // 開始日を21日に設定
-    const end = new Date(year, month, 20); // 終了日を翌月の20日に設定
+    const start = new Date(year, month - 1, 21);
+    const end = new Date(year, month, 20);
 
     let dateArray = [];
     let currentDate = start;
 
-    const startDay = start.getDay(); // 開始日の曜日を取得
+    const startDay = start.getDay();
 
-    // 空のセルを追加
     for (let i = 0; i < startDay; i++) {
       dateArray.push(null);
     }
 
-    // 日付を追加
     while (currentDate <= end) {
       dateArray.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // 35日以上42日未満のとき、空のセルを追加
     while (dateArray.length > 35 && dateArray.length < 42) {
       dateArray.push(null);
     }
 
-    // 35日未満のとき、空のセルを追加
     while (dateArray.length < 35) {
       dateArray.push(null);
     }
@@ -64,12 +55,11 @@ const PartTimeCalendar = ({ name }) => {
       }
     }
 
-    setDates(dateArray); // 日付のリストを設定
+    setDates(dateArray);
   };
 
-  // 出勤状況を更新する関数
   const handleInputChange = (date, value) => {
-    setAvailability((prevAvailability) => {
+    setInternalAvailability((prevAvailability) => {
       const newAvailability = { ...prevAvailability };
       if (newAvailability[date] === value) {
         delete newAvailability[date];
@@ -80,29 +70,25 @@ const PartTimeCalendar = ({ name }) => {
     });
   };
 
-  // 出勤不可の日付をマークする関数
   const handleMarkUnavailable = (date) => {
-    setAvailability((prevAvailability) => ({
+    setInternalAvailability((prevAvailability) => ({
       ...prevAvailability,
       [date]: prevAvailability[date] === '×' ? '' : '×'
     }));
   };
 
-  // フォームの送信時に呼び出される関数
   const handleSubmit = (e) => {
-    e.preventDefault(); // デフォルトのフォーム送信動作を防止
+    e.preventDefault();
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
     if (year !== currentYear || month !== currentMonth) {
       setError('シフト表は現在の月のものである必要があります。');
     } else {
       setError('');
-      console.log('Availability:', availability);
-      // ここで必要な処理を行います
+      setAvailability(availability);
     }
   };
 
-  // 週ごとの日付を表示する関数
   const renderWeek = (weekDates) => (
     <div className="calendar-week">
       {weekDates.map((date, index) => (
@@ -150,7 +136,6 @@ const PartTimeCalendar = ({ name }) => {
     </div>
   );
 
-  // 日付を週ごとに分割
   const weeks = [];
   for (let i = 0; i < dates.length; i += 7) {
     weeks.push(dates.slice(i, i + 7));
@@ -209,4 +194,4 @@ const PartTimeCalendar = ({ name }) => {
   );
 };
 
-export default PartTimeCalendar; // PartTimeCalendarコンポーネントをエクスポート
+export default PartTimeCalendar;
