@@ -4,22 +4,21 @@ import PartCalendar from './components/PartCalendar';
 import './styles/App.css';
 
 const App = () => {
-  // ステートフックを使って名前、役職、提出状態、利用可能日、利用不可日、確認状態、提出成功状態を管理
-  const [name, setName] = useState('');
-  const [role, setRole] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [availability, setAvailability] = useState({});
-  const [unavailableDates, setUnavailableDates] = useState([]);
-  const [confirmation, setConfirmation] = useState(false);
-  const [submissionSuccess, setSubmissionSuccess] = useState(false);
+  const [name, setName] = useState(''); // ユーザーの名前を保持する状態
+  const [role, setRole] = useState(''); // ユーザーの役職を保持する状態
+  const [submitted, setSubmitted] = useState(false); // 提出が行われたかどうかを保持する状態
+  const [availability, setAvailability] = useState({}); // アルバイトの出勤可能日と時間を保持する状態
+  const [unavailableDates, setUnavailableDates] = useState([]); // パートの希望休日を保持する状態
+  const [confirmation, setConfirmation] = useState(false); // 確認メッセージの表示状態を保持
+  const [submissionSuccess, setSubmissionSuccess] = useState(false); // 提出成功メッセージの表示状態を保持
 
-  // フォームが提出されたときの処理
+  // ユーザーがフォームを送信したときに呼ばれる関数
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
   };
 
-  // シフト提出ボタンが押されたときの処理
+  // シフト提出時に呼ばれる関数
   const handleShiftSubmit = async () => {
     const newEmployee = {
       name: name,
@@ -44,14 +43,21 @@ const App = () => {
       }
 
       console.log('Employee data saved successfully');
-      setConfirmation(false);
-      setSubmissionSuccess(true);
+      setConfirmation(false); // 確認メッセージを非表示
+      setSubmissionSuccess(true); // 提出成功メッセージを表示
     } catch (error) {
       console.error('Error saving employee data:', error);
     }
   };
 
-  // 提出後の表示を役職に応じて切り替える
+  if (submissionSuccess) {
+    return (
+      <div className="submission-success-container">
+        <h2>シフトを提出しました</h2>
+      </div>
+    );
+  }
+
   if (submitted) {
     return role === 'partTime' 
       ? <PartTimeCalendar
@@ -70,7 +76,6 @@ const App = () => {
         />;
   }
 
-  // 登録フォームの表示
   return (
     <div className="registration-container">
       <form onSubmit={handleSubmit} className="registration-form">
