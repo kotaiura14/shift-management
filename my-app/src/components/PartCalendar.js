@@ -1,55 +1,56 @@
-import React, { useState, useEffect } from 'react'; // ReactとuseState、useEffectフックをインポート
-import '../styles/Calendar.css'; // CSSファイルをインポート
+import React, { useState, useEffect } from 'react';
+import '../styles/Calendar.css';
 
-const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土']; // 曜日のリストを定義
+// 日曜日から土曜日までの日を表す配列
+const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
 
-// PartCalendarコンポーネント
-const PartCalendar = ({ name }) => {
-  // 年、月、日付、出勤状況、テーマ、エラーメッセージを管理する状態を定義
-  const [year, setYear] = useState(new Date().getFullYear()); // 年の状態を管理
-  const [month, setMonth] = useState(new Date().getMonth() + 1); // 月の状態を管理
-  const [dates, setDates] = useState([]); // 日付のリストを管理
-  const [availability, setAvailability] = useState({}); // 出勤状況を管理
-  const [theme, setTheme] = useState('theme1'); // テーマの状態を管理
-  const [error, setError] = useState(''); // エラーメッセージを管理
+// PartCalendar コンポーネントの定義。propsには名前、シフト提出のための関数、確認状態のセット関数が含まれる
+const PartCalendar = ({ name, setUnavailableDates, handleShiftSubmit, confirmation, setConfirmation }) => {
+  // ステートフックを使って年、月、日付配列、利用不可の日付配列、テーマ、エラーメッセージ、提出成功状態を管理
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState(new Date().getMonth() + 1);
+  const [dates, setDates] = useState([]);
+  const [unavailableDates, setInternalUnavailableDates] = useState([]);
+  const [theme, setTheme] = useState('theme1');
+  const [error, setError] = useState('');
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
 
-  // 年と月が変更されたときにカレンダーを生成
+  // 年や月が変更されたときにカレンダーを生成する
   useEffect(() => {
     generateCalendar(year, month);
   }, [year, month]);
 
-  // テーマが変更されたときに適用
+  // テーマが変更されたときに、bodyのクラスを更新する
   useEffect(() => {
     document.body.className = theme;
   }, [theme]);
 
   // カレンダーを生成する関数
   const generateCalendar = (year, month) => {
-    const start = new Date(year, month - 1, 21); // 開始日を21日に設定
-    const end = new Date(year, month, 20); // 終了日を翌月の20日に設定
+    const start = new Date(year, month - 1, 21);
+    const end = new Date(year, month, 20);
 
     let dateArray = [];
     let currentDate = start;
 
-    const startDay = start.getDay(); // 開始日の曜日を取得
+    const startDay = start.getDay();
 
-    // 空のセルを追加
+    // カレンダーの最初の行を空白で埋める
     for (let i = 0; i < startDay; i++) {
       dateArray.push(null);
     }
 
-    // 日付を追加
+    // カレンダーの日付を配列に追加
     while (currentDate <= end) {
       dateArray.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // 35日以上42日未満のとき、空のセルを追加
+    // カレンダーを35日から42日の範囲に調整
     while (dateArray.length > 35 && dateArray.length < 42) {
       dateArray.push(null);
     }
 
-    // 35日未満のとき、空のセルを追加
     while (dateArray.length < 35) {
       dateArray.push(null);
     }
@@ -59,32 +60,42 @@ const PartCalendar = ({ name }) => {
       }
     }
 
-    setDates(dateArray); // 日付のリストを設定
+    setDates(dateArray);
   };
 
-  // 出勤不可の日付をマークする関数
+  // 休み希望の日付を管理する関数
   const handleMarkUnavailable = (date) => {
-    setAvailability((prevAvailability) => ({
-      ...prevAvailability,
-      [date]: prevAvailability[date] === '休み' ? '' : '休み'
-    }));
+    setInternalUnavailableDates((prevUnavailableDates) => {
+      if (prevUnavailableDates.includes(date)) {
+        return prevUnavailableDates.filter(d => d !== date);
+      } else {
+        return [...prevUnavailableDates, date];
+      }
+    });
   };
 
-  // フォームの送信時に呼び出される関数
+  // シフト提出ボタンが押されたときの処理
   const handleSubmit = (e) => {
-    e.preventDefault(); // デフォルトのフォーム送信動作を防止
+    e.preventDefault();
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
     if (year !== currentYear || month !== currentMonth) {
       setError('シフト表は現在の月のものである必要があります。');
     } else {
       setError('');
-      console.log('Availability:', availability);
-      // ここで必要な処理を行います
+      setUnavailableDates(unavailableDates); // ここでステートを親に渡す
+      setConfirmation(true);
     }
   };
 
-  // 週ごとの日付を表示する関数
+  // 確認ボタンが押されたときの処理
+  const handleConfirm = () => {
+    setConfirmation(false);
+    setSubmissionSuccess(true);
+    handleShiftSubmit();
+  };
+
+  // 一週間分の日付をレンダリングする関数
   const renderWeek = (weekDates) => (
     <div className="calendar-week">
       {weekDates.map((date, index) => (
@@ -92,7 +103,7 @@ const PartCalendar = ({ name }) => {
           {date ? (
             <>
               <div onClick={() => handleMarkUnavailable(date.toDateString())}>
-                {availability[date.toDateString()] === '休み' ? '休み' : date.getDate()}
+                {unavailableDates.includes(date.toDateString()) ? '休み' : date.getDate()}
               </div>
             </>
           ) : (
@@ -103,14 +114,21 @@ const PartCalendar = ({ name }) => {
     </div>
   );
 
-  // 日付を週ごとに分割
   const weeks = [];
   for (let i = 0; i < dates.length; i += 7) {
     weeks.push(dates.slice(i, i + 7));
   }
 
+  if (submissionSuccess) {
+    return (
+      <div className="submission-success-container">
+        <h2>シフトを提出しました</h2>
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <div className={confirmation ? "blur" : ""}>
       <div className="theme-selector">
         <label>テーマ選択:</label>
         <select value={theme} onChange={(e) => setTheme(e.target.value)}>
@@ -118,7 +136,16 @@ const PartCalendar = ({ name }) => {
           <option value="theme2">テーマ2</option>
         </select>
       </div>
-      <p className="notice">希望休日をクリックしてください</p>
+      {confirmation && (
+        <div className="confirmation-container">
+          <h2>シフト提出の確認</h2>
+          <p>シフトを提出してよろしいですか？</p>
+          <div className="confirmation-buttons">
+            <button onClick={handleConfirm}>はい</button>
+            <button onClick={() => setConfirmation(false)}>いいえ</button>
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit}>
         <div className="calendar-controls">
           <label>
@@ -163,4 +190,4 @@ const PartCalendar = ({ name }) => {
   );
 };
 
-export default PartCalendar; // PartCalendarコンポーネントをエクスポート
+export default PartCalendar;

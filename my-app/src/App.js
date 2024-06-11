@@ -1,28 +1,76 @@
-import React, { useState } from 'react'; // ReactとuseStateフックをインポート
-import PartTimeCalendar from './components/PartTimeCalendar'; // PartTimeCalendarコンポーネントをインポート
-import PartCalendar from './components/PartCalendar'; // PartCalendarコンポーネントをインポート
-import './styles/App.css'; // CSSファイルをインポート
+import React, { useState } from 'react';
+import PartTimeCalendar from './components/PartTimeCalendar';
+import PartCalendar from './components/PartCalendar';
+import './styles/App.css';
 
-// アプリケーションのメインコンポーネント
 const App = () => {
-  // 名前と役割を管理するための状態と、フォームが提出されたかどうかの状態を定義
-  const [name, setName] = useState(''); // 名前の状態を管理
-  const [role, setRole] = useState(''); // 役割の状態を管理
-  const [submitted, setSubmitted] = useState(false); // フォームが提出されたかどうかを管理
+  // ステートフックを使って名前、役職、提出状態、利用可能日、利用不可日、確認状態、提出成功状態を管理
+  const [name, setName] = useState('');
+  const [role, setRole] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [availability, setAvailability] = useState({});
+  const [unavailableDates, setUnavailableDates] = useState([]);
+  const [confirmation, setConfirmation] = useState(false);
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
 
-  // フォームの送信時に呼び出される関数
+  // フォームが提出されたときの処理
   const handleSubmit = (e) => {
-    e.preventDefault(); // デフォルトのフォーム送信動作を防止
-    setSubmitted(true); // フォームが提出されたことを設定
+    e.preventDefault();
+    setSubmitted(true);
   };
 
-  // フォームが提出された後の表示
+  // シフト提出ボタンが押されたときの処理
+  const handleShiftSubmit = async () => {
+    const newEmployee = {
+      name: name,
+      role: role,
+      availability: role === 'partTime' ? Object.keys(availability).map(date => ({ date, availableHours: availability[date] })) : [],
+      unavailableDates: role === 'part' ? unavailableDates : []
+    };
+
+    console.log('Submitting data:', newEmployee); // 送信データをログに出力
+
+    try {
+      const response = await fetch('http://localhost:4000/api/employees', { // ポート4000に変更
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newEmployee)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save employee data');
+      }
+
+      console.log('Employee data saved successfully');
+      setConfirmation(false);
+      setSubmissionSuccess(true);
+    } catch (error) {
+      console.error('Error saving employee data:', error);
+    }
+  };
+
+  // 提出後の表示を役職に応じて切り替える
   if (submitted) {
-    // 役割に応じてカレンダーコンポーネントを表示
-    return role === 'partTime' ? <PartTimeCalendar name={name} /> : <PartCalendar name={name} />;
+    return role === 'partTime' 
+      ? <PartTimeCalendar
+          name={name}
+          setAvailability={setAvailability}
+          handleShiftSubmit={handleShiftSubmit}
+          confirmation={confirmation}
+          setConfirmation={setConfirmation}
+        />
+      : <PartCalendar
+          name={name}
+          setUnavailableDates={setUnavailableDates}
+          handleShiftSubmit={handleShiftSubmit}
+          confirmation={confirmation}
+          setConfirmation={setConfirmation}
+        />;
   }
 
-  // フォームの表示
+  // 登録フォームの表示
   return (
     <div className="registration-container">
       <form onSubmit={handleSubmit} className="registration-form">
@@ -32,7 +80,7 @@ const App = () => {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            required // 必須入力
+            required
           />
           <label>役職:</label>
           <select value={role} onChange={(e) => setRole(e.target.value)} required>
@@ -47,4 +95,4 @@ const App = () => {
   );
 };
 
-export default App; // Appコンポーネントをエクスポート
+export default App;
