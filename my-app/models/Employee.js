@@ -1,18 +1,15 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-const availabilitySchema = new Schema({
-  date: { type: Date, required: true },
-  availableHours: { type: [String], default: [] } // '09:00', '09:30', etc.
+const availabilitySchema = new mongoose.Schema({
+  date: { type: String, required: true }, // Date型からString型に変更
+  availableHours: [String]
 });
 
-const employeeSchema = new Schema({
+const employeeSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  role: { type: String, required: true, enum: ['partTime', 'part'] },
-  availability: { type: [availabilitySchema], default: [] },
-  unavailableDates: { type: [Date], default: [] } // For 'part'
+  role: { type: String, required: true },
+  availability: [availabilitySchema],
+  unavailableDates: [String] // Date型からString型に変更
 });
 
-const Employee = mongoose.model('Employee', employeeSchema);
-
-module.exports = Employee;
+module.exports = mongoose.model('Employee', employeeSchema);

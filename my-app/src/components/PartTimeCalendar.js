@@ -1,52 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Calendar.css';
 
-// 日曜日から土曜日までの日を表す配列
+// 曜日と勤務時間のリスト
 const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
+const workingHours = Array.from({ length: 19 }, (_, i) => {
+  const hour = String(Math.floor(i / 2) + 9).padStart(2, '0');
+  const minutes = i % 2 === 0 ? '00' : '30';
+  return `${hour}:${minutes}`;
+}).concat('いつでも出勤可能');
 
-// PartCalendar コンポーネントの定義。propsには名前、シフト提出のための関数、確認状態のセット関数が含まれる
-const PartCalendar = ({ name, setUnavailableDates, handleShiftSubmit, confirmation, setConfirmation }) => {
-  // ステートフックを使って年、月、日付配列、利用不可の日付配列、テーマ、エラーメッセージ、提出成功状態を管理
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [dates, setDates] = useState([]);
-  const [unavailableDates, setInternalUnavailableDates] = useState([]);
-  const [theme, setTheme] = useState('theme1');
-  const [error, setError] = useState('');
-  const [submissionSuccess, setSubmissionSuccess] = useState(false);
+const PartTimeCalendar = ({ name, setAvailability, handleShiftSubmit, confirmation, setConfirmation }) => {
+  const [year, setYear] = useState(new Date().getFullYear()); // 年を保持
+  const [month, setMonth] = useState(new Date().getMonth() + 1); // 月を保持
+  const [dates, setDates] = useState([]); // カレンダーの日付を保持
+  const [availability, setInternalAvailability] = useState({}); // 出勤可能時間を保持
+  const [theme, setTheme] = useState('theme1'); // テーマを保持
+  const [error, setError] = useState(''); // エラーメッセージを保持
 
-  // 年や月が変更されたときにカレンダーを生成する
+  // 年と月が変更されたときにカレンダーを生成
   useEffect(() => {
     generateCalendar(year, month);
   }, [year, month]);
 
-  // テーマが変更されたときに、bodyのクラスを更新する
+  // テーマが変更されたときに適用
   useEffect(() => {
     document.body.className = theme;
   }, [theme]);
 
   // カレンダーを生成する関数
   const generateCalendar = (year, month) => {
-    const start = new Date(year, month - 1, 21); // 開始日を設定
-    const end = new Date(year, month, 20); // 終了日を設定
+    const start = new Date(year, month - 1, 21);
+    const end = new Date(year, month, 20);
 
     let dateArray = [];
     let currentDate = start;
 
     const startDay = start.getDay();
 
-    // カレンダーの最初の行を空白で埋める
     for (let i = 0; i < startDay; i++) {
       dateArray.push(null);
     }
 
-    // カレンダーの日付を配列に追加
     while (currentDate <= end) {
       dateArray.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // カレンダーを35日から42日の範囲に調整
     while (dateArray.length > 35 && dateArray.length < 42) {
       dateArray.push(null);
     }
@@ -63,50 +62,103 @@ const PartCalendar = ({ name, setUnavailableDates, handleShiftSubmit, confirmati
     setDates(dateArray);
   };
 
-  // 休み希望の日付を管理する関数
-  const handleMarkUnavailable = (date) => {
-    setInternalUnavailableDates((prevUnavailableDates) => {
-      if (prevUnavailableDates.includes(date)) {
-        // 既に休み希望に含まれている場合は削除
-        return prevUnavailableDates.filter(d => d !== date);
+  // 勤務可能時間を変更する関数
+  const handleInputChange = (date, value) => {
+    setInternalAvailability((prevAvailability) => {
+      const newAvailability = { ...prevAvailability };
+      if (newAvailability[date]) {
+        if (newAvailability[date].includes(value)) {
+          newAvailability[date] = newAvailability[date].filter(time => time !== value);
+          if (newAvailability[date].length === 0) {
+            delete newAvailability[date];
+          }
+        } else {
+          newAvailability[date].push(value);
+        }
       } else {
-        // 含まれていない場合は追加
-        return [...prevUnavailableDates, date];
+        newAvailability[date] = [value];
       }
+      return newAvailability;
     });
   };
 
-  // シフト提出ボタンが押されたときの処理
+  // 出勤不可日をマークする関数
+  const handleMarkUnavailable = (date) => {
+    setInternalAvailability((prevAvailability) => {
+      const newAvailability = { ...prevAvailability };
+      if (newAvailability[date] && newAvailability[date][0] === '×') {
+        delete newAvailability[date];
+      } else {
+        newAvailability[date] = ['×'];
+      }
+      return newAvailability;
+    });
+  };
+
+  // シフト提出ボタンを押したときの処理
   const handleSubmit = (e) => {
     e.preventDefault();
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
     if (year !== currentYear || month !== currentMonth) {
-      setError('シフト表は現在の月のものである必要があります。'); // エラーメッセージを設定
+      setError('シフト表は現在の月のものである必要があります。');
     } else {
-      setError(''); // エラーメッセージをクリア
-      setUnavailableDates(unavailableDates); // ここでステートを親に渡す
-      setConfirmation(true); // 確認状態を設定
+      const allDatesFilled = dates.every(date => date === null || availability[date.toDateString()]);
+      if (!allDatesFilled) {
+        setError('すべての日付に勤務可能時間を設定してください。');
+      } else {
+        setError('');
+        setAvailability(availability);
+        setConfirmation(true);
+      }
     }
   };
 
-  // 確認ボタンが押されたときの処理
+  // 確認メッセージの「はい」ボタンを押したときの処理
   const handleConfirm = () => {
     setConfirmation(false);
-    setSubmissionSuccess(true); // 提出成功状態を設定
-    handleShiftSubmit(); // シフト提出の処理を呼び出し
+    handleShiftSubmit();
   };
 
-  // 一週間分の日付をレンダリングする関数
+  // カレンダーの1週間をレンダリングする関数
   const renderWeek = (weekDates) => (
     <div className="calendar-week">
       {weekDates.map((date, index) => (
         <div key={index} className="calendar-day">
           {date ? (
             <>
-              <div onClick={() => handleMarkUnavailable(date.toDateString())}>
-                {unavailableDates.includes(date.toDateString()) ? '休み' : date.getDate()}
-              </div>
+              <div>{date.getDate()}</div>
+              {availability[date.toDateString()] && availability[date.toDateString()][0] === '×' ? (
+                <div
+                  className="unavailable"
+                  onClick={() => handleMarkUnavailable(date.toDateString())}
+                >
+                  ×
+                </div>
+              ) : availability[date.toDateString()] ? (
+                <div
+                  className="selected-time"
+                  onClick={() => handleInputChange(date.toDateString(), '')}
+                >
+                  {availability[date.toDateString()].join(', ')}
+                </div>
+              ) : (
+                <>
+                  <select
+                    value=""
+                    onChange={(e) => handleInputChange(date.toDateString(), e.target.value)}
+                    className="calendar-select"
+                  >
+                    <option value="">勤務時間を選択</option>
+                    {workingHours.map((hour) => (
+                      <option key={hour} value={hour}>{hour}</option>
+                    ))}
+                  </select>
+                  <button type="button" onClick={() => handleMarkUnavailable(date.toDateString())} className="calendar-button">
+                    ×
+                  </button>
+                </>
+              )}
             </>
           ) : (
             <div>&nbsp;</div>
@@ -116,28 +168,62 @@ const PartCalendar = ({ name, setUnavailableDates, handleShiftSubmit, confirmati
     </div>
   );
 
-  // 週ごとに分けた日付を格納する配列
+  // カレンダーを週ごとに分割してレンダリング
   const weeks = [];
   for (let i = 0; i < dates.length; i += 7) {
     weeks.push(dates.slice(i, i + 7));
   }
 
-  if (submissionSuccess) {
-    return (
-      <div className="submission-success-container">
-        <h2>シフトを提出しました</h2>
-      </div>
-    );
-  }
-
   return (
-    <div className={confirmation ? "blur" : ""}>
-      <div className="theme-selector">
-        <label>テーマ選択:</label>
-        <select value={theme} onChange={(e) => setTheme(e.target.value)}>
-          <option value="theme1">テーマ1</option>
-          <option value="theme2">テーマ2</option>
-        </select>
+    <div className="calendar-container">
+      <div className={`calendar-content ${confirmation ? 'blur' : ''}`}>
+        <div className="theme-selector">
+          <label>テーマ選択:</label>
+          <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+            <option value="theme1">テーマ1</option>
+            <option value="theme2">テーマ2</option>
+          </select>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="calendar-controls">
+            <label>
+              年:
+              <input
+                type="number"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                min="2000"
+                max="2100"
+              />
+            </label>
+            <label>
+              月:
+              <input
+                type="number"
+                value={month}
+                onChange={(e) => setMonth(e.target.value)}
+                min="1"
+                max="12"
+              />
+            </label>
+          </div>
+          {error && <div className="error-message">{error}</div>}
+          <div className="calendar">
+            <div className="calendar-header">
+              {daysOfWeek.map((day, index) => (
+                <div key={index} className="calendar-day-header">
+                  {day}
+                </div>
+              ))}
+            </div>
+            {weeks.map((week, index) => (
+              <React.Fragment key={index}>
+                {renderWeek(week)}
+              </React.Fragment>
+            ))}
+          </div>
+          <button type="submit">勤務可能時間を提出</button>
+        </form>
       </div>
       {confirmation && (
         <div className="confirmation-container">
@@ -149,48 +235,8 @@ const PartCalendar = ({ name, setUnavailableDates, handleShiftSubmit, confirmati
           </div>
         </div>
       )}
-      <form onSubmit={handleSubmit}>
-        <div className="calendar-controls">
-          <label>
-            年:
-            <input
-              type="number"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-              min="2000"
-              max="2100"
-            />
-          </label>
-          <label>
-            月:
-            <input
-              type="number"
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-              min="1"
-              max="12"
-            />
-          </label>
-        </div>
-        {error && <div className="error-message">{error}</div>}
-        <div className="calendar">
-          <div className="calendar-header">
-            {daysOfWeek.map((day, index) => (
-              <div key={index} className="calendar-day-header">
-                {day}
-              </div>
-            ))}
-          </div>
-          {weeks.map((week, index) => (
-            <React.Fragment key={index}>
-              {renderWeek(week)}
-            </React.Fragment>
-          ))}
-        </div>
-        <button type="submit">休み希望を提出</button>
-      </form>
     </div>
   );
 };
 
-export default PartCalendar;
+export default PartTimeCalendar;

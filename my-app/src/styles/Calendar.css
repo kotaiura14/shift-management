@@ -257,3 +257,16 @@ body.theme2 button[type="submit"] {
   padding: 10px 20px;
   cursor: pointer;
 }
+
+.calendar-container {
+  position: relative;
+}
+
+.calendar-content.blur {
+  filter: blur(5px);
+}
+
+.submission-success-container {
+  text-align: center;
+  padding: 20px;
+}
