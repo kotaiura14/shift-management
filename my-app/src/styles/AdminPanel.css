@@ -1,0 +1,109 @@
+.admin-panel {
+    padding: 20px;
+  }
+  
+  .admin-nav {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .admin-nav button {
+    margin-right: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .admin-nav button:hover {
+    background-color: #45a049;
+  }
+  
+  .admin-content {
+    border-top: 1px solid #ccc;
+    padding-top: 20px;
+  }
+  
+  .shift-management {
+    margin-top: 20px;
+  }
+  
+  .shift-management h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .shift-management table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .shift-management th, .shift-management td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .shift-management th {
+    background-color: #f2f2f2;
+  }
+  
+  .shift-management td {
+    height: 50px;
+  }
+  
+  .labor-management {
+    margin-top: 20px;
+  }
+  
+  .labor-management h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .labor-management form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .labor-management label {
+    margin-bottom: 10px;
+  }
+  
+  .labor-management input {
+    padding: 5px;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .labor-management button {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .labor-management button:hover {
+    background-color: #45a049;
+  }
+  
+  .labor-management ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .labor-management li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  

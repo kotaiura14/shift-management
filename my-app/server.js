@@ -11,8 +11,8 @@ app.use(cors()); // CORSを有効にする
 
 // MongoDBに接続
 mongoose.connect('mongodb://localhost:27017/shift-scheduler')
-.then(() => console.log('MongoDBに接続しました'))
-.catch(err => console.log('MongoDB接続エラー:', err));
+  .then(() => console.log('MongoDBに接続しました'))
+  .catch(err => console.log('MongoDB接続エラー:', err));
 
 // ログをファイルに書き込む関数
 const logToFile = (data) => {
@@ -41,9 +41,44 @@ const logToFile = (data) => {
   });
 };
 
-// シフト提出エンドポイント
+// シフト情報を取得するエンドポイント
+app.get('/api/shifts', async (req, res) => {
+  try {
+    const employees = await Employee.find({});
+    const shifts = employees.flatMap(employee => {
+      return employee.availability.map(avail => ({
+        name: employee.name,
+        role: employee.role,
+        date: avail.date,
+        startTime: avail.availableHours[0],
+        endTime: avail.availableHours[avail.availableHours.length - 1]
+      }));
+    });
+    res.status(200).json(shifts);
+  } catch (error) {
+    console.error('シフト情報取得エラー:', error);
+    res.status(500).send('シフト情報の取得に失敗しました');
+  }
+});
+
+// 従業員情報を取得するエンドポイント
+app.get('/api/employees', async (req, res) => {
+  try {
+    const employees = await Employee.find({});
+    res.status(200).json(employees);
+  } catch (error) {
+    console.error('従業員情報取得エラー:', error);
+    res.status(500).send('従業員情報の取得に失敗しました');
+  }
+});
+
+// 従業員情報を保存するエンドポイント
 app.post('/api/employees', async (req, res) => {
   const { name, role, availability, unavailableDates } = req.body;
+
+  if (!name || !role || (!availability.length && !unavailableDates.length)) {
+    return res.status(400).send('必要なデータが不足しています');
+  }
 
   // シフトの月と年を計算
   const shiftMonth = availability.length > 0 
@@ -83,14 +118,14 @@ app.post('/api/employees', async (req, res) => {
       logToFile(req.body); // 受信データをログファイルに保存
       console.log('従業員データを更新しました'); // データ更新成功のログ
     } else {
-      console.log('更新対象のレコードが見つかりませんでした');
+      console.log('新しい従業員データを保存しました');
     }
 
     res.status(201).send('従業員データを保存しました');
   } catch (error) {
     console.error('従業員データの保存エラー:', error); // エラーログ
     logToFile({ error: error.message }); // エラーをログファイルに保存
-    res.status(400).send(error);
+    res.status(400).send(error.message);
   }
 });
 

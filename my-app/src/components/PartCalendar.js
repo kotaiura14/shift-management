@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Calendar.css';
 
-// 曜日のリスト
+// 曜日リスト
 const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
 
 const PartCalendar = ({ name, setUnavailableDates, handleShiftSubmit, confirmation, setConfirmation }) => {
@@ -77,8 +77,8 @@ const PartCalendar = ({ name, setUnavailableDates, handleShiftSubmit, confirmati
       setError('シフト表は現在の月のものである必要があります。');
     } else {
       setError('');
-      setUnavailableDates(unavailableDates); // 親にステートを渡す
-      setConfirmation(true); // 確認メッセージを表示
+      setUnavailableDates(unavailableDates);
+      setConfirmation(true);
     }
   };
 

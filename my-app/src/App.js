@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PartTimeCalendar from './components/PartTimeCalendar';
 import PartCalendar from './components/PartCalendar';
+import AdminPanel from './components/AdminPanel'; // 管理者画面のインポート
 import './styles/App.css';
 
 const App = () => {
@@ -11,6 +12,12 @@ const App = () => {
   const [unavailableDates, setUnavailableDates] = useState([]); // パートの希望休日を保持する状態
   const [confirmation, setConfirmation] = useState(false); // 確認メッセージの表示状態を保持
   const [submissionSuccess, setSubmissionSuccess] = useState(false); // 提出成功メッセージの表示状態を保持
+  const [isAdmin, setIsAdmin] = useState(false); // 管理者モードの状態を保持する
+
+  // 管理者モードのトグル関数
+  const toggleAdmin = () => {
+    setIsAdmin(!isAdmin);
+  };
 
   // ユーザーがフォームを送信したときに呼ばれる関数
   const handleSubmit = (e) => {
@@ -77,25 +84,34 @@ const App = () => {
   }
 
   return (
-    <div className="registration-container">
-      <form onSubmit={handleSubmit} className="registration-form">
-        <div className="form-group">
-          <label>名前:</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <label>役職:</label>
-          <select value={role} onChange={(e) => setRole(e.target.value)} required>
-            <option value="">選択してください</option>
-            <option value="partTime">アルバイト</option>
-            <option value="part">パート</option>
-          </select>
+    <div className="app">
+      <button onClick={toggleAdmin} className="toggle-admin-button">
+        {isAdmin ? 'ユーザーモードに切り替え' : '管理者モードに切り替え'}
+      </button>
+      {isAdmin ? (
+        <AdminPanel />
+      ) : (
+        <div className="registration-container">
+          <form onSubmit={handleSubmit} className="registration-form">
+            <div className="form-group">
+              <label>名前:</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+              <label>役職:</label>
+              <select value={role} onChange={(e) => setRole(e.target.value)} required>
+                <option value="">選択してください</option>
+                <option value="partTime">アルバイト</option>
+                <option value="part">パート</option>
+              </select>
+            </div>
+            <button type="submit" className="submit-button">次へ</button>
+          </form>
         </div>
-        <button type="submit" className="submit-button">次へ</button>
-      </form>
+      )}
     </div>
   );
 };
