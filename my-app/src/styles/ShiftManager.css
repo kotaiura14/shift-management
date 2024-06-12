@@ -1,0 +1,23 @@
+.shift-management {
+  padding: 20px;
+}
+
+.shift-management table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.shift-management th, .shift-management td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.shift-management th {
+  background-color: #f2f2f2;
+}
+
+.shift-management td {
+  height: 50px;
+  white-space: nowrap; /* テキストを横書きにするために追加 */
+}
