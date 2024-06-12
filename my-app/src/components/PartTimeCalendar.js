@@ -49,10 +49,6 @@ const PartTimeCalendar = ({ name, setAvailability, handleShiftSubmit, confirmati
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    while (dateArray.length > 35 && dateArray.length < 42) {
-      dateArray.push(null);
-    }
-
     while (dateArray.length < 35) {
       dateArray.push(null);
     }
@@ -94,6 +90,42 @@ const PartTimeCalendar = ({ name, setAvailability, handleShiftSubmit, confirmati
       } else {
         newAvailability[date] = ['×'];
       }
+      return newAvailability;
+    });
+  };
+
+  // 指定した曜日全てを出勤不可にし、再度押すと元に戻す関数
+  const toggleDayAvailability = (day) => {
+    setInternalAvailability((prevAvailability) => {
+      const newAvailability = { ...prevAvailability };
+      let allMarked = true;
+      dates.forEach(date => {
+        if (date && date.getDay() === day) {
+          if (!newAvailability[date.toDateString()] || newAvailability[date.toDateString()][0] !== '×') {
+            allMarked = false;
+          }
+        }
+      });
+
+      dates.forEach(date => {
+        if (date && date.getDay() === day) {
+          if (allMarked) {
+            delete newAvailability[date.toDateString()];
+          } else {
+            newAvailability[date.toDateString()] = ['×'];
+          }
+        }
+      });
+
+      return newAvailability;
+    });
+  };
+
+  // 勤務可能時間を取り消す関数
+  const handleRemoveTime = (date) => {
+    setInternalAvailability((prevAvailability) => {
+      const newAvailability = { ...prevAvailability };
+      delete newAvailability[date];
       return newAvailability;
     });
   };
@@ -142,9 +174,12 @@ const PartTimeCalendar = ({ name, setAvailability, handleShiftSubmit, confirmati
               ) : availability[date.toDateString()] ? (
                 <div
                   className="selected-time"
-                  onClick={() => handleInputChange(date.toDateString(), '')}
+                  onClick={() => handleRemoveTime(date.toDateString())}
                 >
                   {availability[date.toDateString()].join(', ')}
+                  <button type="button" onClick={() => handleRemoveTime(date.toDateString())} className="remove-time-button">
+                    取り消し
+                  </button>
                 </div>
               ) : (
                 <>
@@ -235,9 +270,9 @@ const PartTimeCalendar = ({ name, setAvailability, handleShiftSubmit, confirmati
           <div className="calendar">
             <div className="calendar-header">
               {daysOfWeek.map((day, index) => (
-                <div key={index} className="calendar-day-header">
+                <button key={index} className="calendar-day-header" onClick={() => toggleDayAvailability(index)}>
                   {day}
-                </div>
+                </button>
               ))}
             </div>
             {weeks.map((week, index) => (
