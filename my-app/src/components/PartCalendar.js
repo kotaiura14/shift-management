@@ -1,25 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Calendar.css';
 
-// 曜日リスト
-const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
+const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土']; // 曜日の配列
 
 const PartCalendar = ({ name, setUnavailableDates, handleShiftSubmit, confirmation, setConfirmation }) => {
-  const [year, setYear] = useState(new Date().getFullYear()); // 年を保持
-  const [month, setMonth] = useState(new Date().getMonth() + 1); // 月を保持
-  const [dates, setDates] = useState([]); // カレンダーの日付を保持
-  const [unavailableDates, setInternalUnavailableDates] = useState([]); // 出勤不可日を保持
-  const [theme, setTheme] = useState('theme1'); // テーマを保持
-  const [error, setError] = useState(''); // エラーメッセージを保持
+  const [year, setYear] = useState(new Date().getFullYear()); // 年を保持する状態
+  const [month, setMonth] = useState(new Date().getMonth() + 1); // 月を保持する状態
+  const [dates, setDates] = useState([]); // 日付を保持する状態
+  const [unavailableDates, setInternalUnavailableDates] = useState([]); // 出勤不可日を保持する内部状態
+  const [theme, setTheme] = useState('theme1'); // テーマを保持する状態
+  const [error, setError] = useState(''); // エラーメッセージを保持する状態
+  const [submissionSuccess, setSubmissionSuccess] = useState(false); // 提出成功メッセージの表示状態を保持
 
-  // 年と月が変更されたときにカレンダーを生成
   useEffect(() => {
-    generateCalendar(year, month);
+    generateCalendar(year, month); // カレンダーを生成
   }, [year, month]);
 
-  // テーマが変更されたときに適用
   useEffect(() => {
-    document.body.className = theme;
+    document.body.className = theme; // テーマを設定
   }, [theme]);
 
   // カレンダーを生成する関数
@@ -77,14 +75,15 @@ const PartCalendar = ({ name, setUnavailableDates, handleShiftSubmit, confirmati
       setError('シフト表は現在の月のものである必要があります。');
     } else {
       setError('');
-      setUnavailableDates(unavailableDates);
-      setConfirmation(true);
+      setUnavailableDates(unavailableDates); // 親にステートを渡す
+      setConfirmation(true); // 確認メッセージを表示
     }
   };
 
   // 確認メッセージの「はい」ボタンを押したときの処理
   const handleConfirm = () => {
     setConfirmation(false);
+    setSubmissionSuccess(true);
     handleShiftSubmit();
   };
 
@@ -107,10 +106,17 @@ const PartCalendar = ({ name, setUnavailableDates, handleShiftSubmit, confirmati
     </div>
   );
 
-  // カレンダーを週ごとに分割してレンダリング
   const weeks = [];
   for (let i = 0; i < dates.length; i += 7) {
     weeks.push(dates.slice(i, i + 7));
+  }
+
+  if (submissionSuccess) {
+    return (
+      <div className="submission-success-container">
+        <h2>シフトを提出しました</h2>
+      </div>
+    );
   }
 
   return (

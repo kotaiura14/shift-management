@@ -49,14 +49,17 @@ const App = () => {
         throw new Error('従業員データの保存に失敗しました');
       }
 
-      console.log('従業員データが正常に保存されました');
+      const data = await response.json();
+      console.log('従業員データが正常に保存されました:', data);
       setConfirmation(false); // 確認メッセージを非表示
       setSubmissionSuccess(true); // 提出成功メッセージを表示
     } catch (error) {
       console.error('従業員データの保存エラー:', error);
+      setSubmissionSuccess(false);
     }
   };
 
+  // 提出成功メッセージを表示する
   if (submissionSuccess) {
     return (
       <div className="submission-success-container">
@@ -65,6 +68,7 @@ const App = () => {
     );
   }
 
+  // フォームが提出された後、役職に応じてカレンダーコンポーネントを表示する
   if (submitted) {
     return role === 'partTime' 
       ? <PartTimeCalendar
@@ -73,6 +77,7 @@ const App = () => {
           handleShiftSubmit={handleShiftSubmit}
           confirmation={confirmation}
           setConfirmation={setConfirmation}
+          setSubmissionSuccess={setSubmissionSuccess} // 提出成功状態を渡す
         />
       : <PartCalendar
           name={name}
@@ -80,16 +85,18 @@ const App = () => {
           handleShiftSubmit={handleShiftSubmit}
           confirmation={confirmation}
           setConfirmation={setConfirmation}
+          setSubmissionSuccess={setSubmissionSuccess} // 提出成功状態を渡す
         />;
   }
 
+  // 初期画面（ユーザー登録フォーム）
   return (
     <div className="app">
       <button onClick={toggleAdmin} className="toggle-admin-button">
         {isAdmin ? 'ユーザーモードに切り替え' : '管理者モードに切り替え'}
       </button>
       {isAdmin ? (
-        <AdminPanel />
+        <AdminPanel /> // 管理者モードが有効な場合、管理者パネルを表示する
       ) : (
         <div className="registration-container">
           <form onSubmit={handleSubmit} className="registration-form">

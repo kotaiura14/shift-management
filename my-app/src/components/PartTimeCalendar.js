@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Calendar.css';
 
-// 曜日と勤務時間のリスト
+// 曜日の配列
 const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
+
+// 勤務可能時間の配列を生成
 const workingHours = Array.from({ length: 19 }, (_, i) => {
   const hour = String(Math.floor(i / 2) + 9).padStart(2, '0');
   const minutes = i % 2 === 0 ? '00' : '30';
@@ -10,19 +12,20 @@ const workingHours = Array.from({ length: 19 }, (_, i) => {
 }).concat('いつでも出勤可能');
 
 const PartTimeCalendar = ({ name, setAvailability, handleShiftSubmit, confirmation, setConfirmation }) => {
-  const [year, setYear] = useState(new Date().getFullYear()); // 年を保持
-  const [month, setMonth] = useState(new Date().getMonth() + 1); // 月を保持
-  const [dates, setDates] = useState([]); // カレンダーの日付を保持
-  const [availability, setInternalAvailability] = useState({}); // 出勤可能時間を保持
-  const [theme, setTheme] = useState('theme1'); // テーマを保持
-  const [error, setError] = useState(''); // エラーメッセージを保持
+  const [year, setYear] = useState(new Date().getFullYear()); // 年を保持する状態
+  const [month, setMonth] = useState(new Date().getMonth() + 1); // 月を保持する状態
+  const [dates, setDates] = useState([]); // 日付を保持する状態
+  const [availability, setInternalAvailability] = useState({}); // 出勤可能日と時間を保持する内部状態
+  const [theme, setTheme] = useState('theme1'); // テーマを保持する状態
+  const [error, setError] = useState(''); // エラーメッセージを保持する状態
+  const [submissionSuccess, setSubmissionSuccess] = useState(false); // 提出成功メッセージを表示する状態
 
-  // 年と月が変更されたときにカレンダーを生成
+  // カレンダーを生成
   useEffect(() => {
     generateCalendar(year, month);
   }, [year, month]);
 
-  // テーマが変更されたときに適用
+  // テーマを設定
   useEffect(() => {
     document.body.className = theme;
   }, [theme]);
@@ -62,7 +65,7 @@ const PartTimeCalendar = ({ name, setAvailability, handleShiftSubmit, confirmati
     setDates(dateArray);
   };
 
-  // 勤務可能時間を変更する関数
+  // 勤務可能時間の変更を処理する関数
   const handleInputChange = (date, value) => {
     setInternalAvailability((prevAvailability) => {
       const newAvailability = { ...prevAvailability };
@@ -118,6 +121,7 @@ const PartTimeCalendar = ({ name, setAvailability, handleShiftSubmit, confirmati
   const handleConfirm = () => {
     setConfirmation(false);
     handleShiftSubmit();
+    setSubmissionSuccess(true); // 提出成功メッセージを表示する状態を設定
   };
 
   // カレンダーの1週間をレンダリングする関数
@@ -168,10 +172,30 @@ const PartTimeCalendar = ({ name, setAvailability, handleShiftSubmit, confirmati
     </div>
   );
 
-  // カレンダーを週ごとに分割してレンダリング
   const weeks = [];
   for (let i = 0; i < dates.length; i += 7) {
     weeks.push(dates.slice(i, i + 7));
+  }
+
+  if (confirmation) {
+    return (
+      <div className="confirmation-container">
+        <h2>シフト提出の確認</h2>
+        <p>シフトを提出してよろしいですか？</p>
+        <div className="confirmation-buttons">
+          <button onClick={handleConfirm}>はい</button>
+          <button onClick={() => setConfirmation(false)}>いいえ</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (submissionSuccess) {
+    return (
+      <div className="submission-success-container">
+        <h2>シフトを提出しました</h2>
+      </div>
+    );
   }
 
   return (
