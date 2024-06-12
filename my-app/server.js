@@ -11,8 +11,8 @@ app.use(cors()); // CORSを有効にする
 
 // MongoDBに接続
 mongoose.connect('mongodb://localhost:27017/shift-scheduler')
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.log('MongoDB connection error:', err));
+.then(() => console.log('MongoDBに接続しました'))
+.catch(err => console.log('MongoDB接続エラー:', err));
 
 // ログをファイルに書き込む関数
 const logToFile = (data) => {
@@ -20,22 +20,22 @@ const logToFile = (data) => {
   fs.readFile(logFilePath, 'utf8', (err, content) => {
     let logs = [];
     if (err && err.code !== 'ENOENT') {
-      console.error('Error reading log file', err);
+      console.error('ログファイルの読み取りエラー', err);
       return;
     }
     if (!err) {
       try {
         logs = JSON.parse(content);
       } catch (parseError) {
-        console.error('Error parsing log file content', parseError);
+        console.error('ログファイル内容の解析エラー', parseError);
       }
     }
     logs.push(data);
     fs.writeFile(logFilePath, JSON.stringify(logs, null, 2), (writeErr) => {
       if (writeErr) {
-        console.error('Error writing to log file', writeErr);
+        console.error('ログファイルへの書き込みエラー', writeErr);
       } else {
-        console.log('Log written to file');
+        console.log('ログファイルに書き込みました');
       }
     });
   });
@@ -52,10 +52,20 @@ app.post('/api/employees', async (req, res) => {
   const shiftYear = availability.length > 0 
     ? new Date(availability[0].date).getFullYear()
     : new Date(unavailableDates[0]).getFullYear();
+  const shiftMonthYearString = `${shiftYear}-${shiftMonth.toString().padStart(2, '0')}`;
 
   try {
-    console.log('Received data:', req.body); // 受信データをログに出力
-    logToFile(req.body); // 受信データをログファイルに保存
+    console.log('受信データ:', req.body); // 受信データをログに出力
+
+    // 既存のデータを削除
+    const deleteResult = await Employee.deleteMany({
+      name,
+      role,
+      $or: [
+        { 'availability.date': { $regex: `^${shiftMonthYearString}` } },
+        { 'unavailableDates': { $regex: `^${shiftMonthYearString}` } }
+      ]
+    });
 
     // 日付を文字列に変換して保存
     const newEmployee = {
@@ -65,28 +75,20 @@ app.post('/api/employees', async (req, res) => {
       unavailableDates: unavailableDates.map(date => new Date(date).toISOString())
     };
 
-    // 既存のシフトを検索して更新、なければ挿入
-    const result = await Employee.updateOne(
-      { 
-        name, 
-        role, 
-        'availability.date': { 
-          $regex: `^${shiftYear}-${shiftMonth.toString().padStart(2, '0')}` 
-        } 
-      },
-      { $set: newEmployee },
-      { upsert: true }
-    );
+    const employee = new Employee(newEmployee);
+    await employee.save();
 
-    if (result.nModified > 0 || result.upserted) {
-      console.log('Employee data updated successfully'); // データ更新成功のログ
+    // 変更があった場合のみログを保存
+    if (deleteResult.deletedCount > 0) {
+      logToFile(req.body); // 受信データをログファイルに保存
+      console.log('従業員データを更新しました'); // データ更新成功のログ
     } else {
-      console.log('Employee data inserted successfully'); // データ挿入成功のログ
+      console.log('更新対象のレコードが見つかりませんでした');
     }
 
-    res.status(201).send('Employee data saved successfully');
+    res.status(201).send('従業員データを保存しました');
   } catch (error) {
-    console.error('Error saving employee data:', error); // エラーログ
+    console.error('従業員データの保存エラー:', error); // エラーログ
     logToFile({ error: error.message }); // エラーをログファイルに保存
     res.status(400).send(error);
   }
@@ -94,5 +96,5 @@ app.post('/api/employees', async (req, res) => {
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`サーバーはポート${PORT}で稼働中です`);
 });

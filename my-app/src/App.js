@@ -27,7 +27,7 @@ const App = () => {
       unavailableDates: role === 'part' ? unavailableDates : []
     };
 
-    console.log('Submitting data:', newEmployee); // 送信データをログに出力
+    console.log('データを送信中:', newEmployee); // 送信データをログに出力
 
     try {
       const response = await fetch('http://localhost:4000/api/employees', { // ポート4000に変更
@@ -39,14 +39,14 @@ const App = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save employee data');
+        throw new Error('従業員データの保存に失敗しました');
       }
 
-      console.log('Employee data saved successfully');
+      console.log('従業員データが正常に保存されました');
       setConfirmation(false); // 確認メッセージを非表示
       setSubmissionSuccess(true); // 提出成功メッセージを表示
     } catch (error) {
-      console.error('Error saving employee data:', error);
+      console.error('従業員データの保存エラー:', error);
     }
   };
 
