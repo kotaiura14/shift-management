@@ -3,11 +3,16 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+
 const Employee = require('./models/Employee'); // スキーマファイルをインポート
 
 const app = express();
 app.use(express.json()); // JSONパース用ミドルウェア
 app.use(cors()); // CORSを有効にする
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(session({ secret: 'secret-key', resave: false, saveUninitialized: true })); // セッション管理の設定
 
 // MongoDBに接続
 mongoose.connect('mongodb://localhost:27017/shift-scheduler')
@@ -40,6 +45,23 @@ const logToFile = (data) => {
     });
   });
 };
+
+// ログインエンドポイント
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+
+  // 入力されたユーザー名とパスワードをログに記録
+  console.log('ログイン試行:', { username, password });
+  logToFile({ event: 'ログイン試行', username, password });
+
+  // ユーザー名とパスワードの確認
+  if (username === 'admin' && password === 'password') {
+    req.session.user = { username };
+    res.status(200).send('ログイン成功');
+  } else {
+    res.status(401).send('ユーザー名またはパスワードが無効です');
+  }
+});
 
 // シフト情報を取得するエンドポイント
 app.get('/api/shifts', async (req, res) => {
